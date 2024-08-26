@@ -374,7 +374,18 @@ class HomeGridBase(MiniGridEnv):
       "all_events": self.all_events,
     }
 
+    #self.save_environment_image(f'../../test_rgb_out/{self.step_count}.png')
+
     return obs, reward, terminated, truncated, info
+
+
+  def save_environment_image(self, savefile):
+    img = self.get_frame(highlight=False)
+    img = Image.fromarray(img)
+    img.save(savefile)
+    print(f"\n\n\nIMAGE SAVED TO {savefile}\n\n\n")
+    
+
 
   def get_full_symbolic_state(self) -> Dict:
     fwd_pos = self.front_pos
@@ -411,7 +422,9 @@ class HomeGridBase(MiniGridEnv):
         "end": self.unsafe_end,
         }
     }
+
     return state
+  
 
   def render_with_text(self, text):
     img = self._env.render(mode="rgb_array")
