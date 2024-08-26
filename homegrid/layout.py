@@ -39,6 +39,8 @@ OBJECTS = [
 	"coffeetable",
 	"cabinet",
 	"plant",
+	"baby",
+	"blood",
 ]
 # Objects that can have things placed on top of them
 SURFACES = {
@@ -53,6 +55,8 @@ SURFACES = {
 	"rugl",
 	"rugr",
 	"coffeetable",
+	"baby",
+	"blood",
 }
 # Trash objects
 TRASH = [
