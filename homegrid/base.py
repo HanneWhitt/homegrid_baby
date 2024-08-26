@@ -34,6 +34,16 @@ if USE_AGENT_TEXTURE:
     AGENT_TEXTURE = np.asarray(Image.open(
         f"{os.path.dirname(__file__)}/assets/robot.png"
     ))
+
+
+BABY_TEXTURE = np.asarray(Image.open(
+        f"{os.path.dirname(__file__)}/assets/baby.png"
+    ))
+SQUASH_TEXTURE = np.asarray(Image.open(
+        f"{os.path.dirname(__file__)}/assets/blood.png"
+    ))
+
+
 # Center the agent in the view
 CENTERED_VIEW = True
 # Map of agent direction indices to vectors
@@ -235,6 +245,33 @@ class FloorWithObject(WorldObj):
 
     def encode(self):
         return (self.name,)
+
+
+class Baby(WorldObj):
+
+    def __init__(self, state="OK"):
+        super().__init__("baby")
+        self._agent_can_overlap = True
+        self._can_overlap = False
+        self.state = state
+
+    def agent_can_overlap(self):
+        return self._agent_can_overlap
+
+    def can_overlap(self):
+        return self._can_overlap
+
+    def render(self, img):
+        if self.state == "squashed":
+            draw_obj(img, SQUASH_TEXTURE)
+        else:
+            draw_obj(img, BABY_TEXTURE)
+
+    def encode(self):
+        return (self.name, self.state)
+    
+    def squash(self):
+        self.state = "squashed"
 
 
 class Wall(WorldObj):

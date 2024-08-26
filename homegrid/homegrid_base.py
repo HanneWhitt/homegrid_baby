@@ -12,7 +12,7 @@ from PIL import ImageDraw
 
 from homegrid.base import (
   MiniGridEnv, Grid,
-  Storage, Inanimate, Pickable
+  Storage, Inanimate, Baby, Pickable
 )
 from homegrid.layout import ThreeRoom, CANS, TRASH, room2name
 
@@ -50,6 +50,7 @@ class HomeGridBase(MiniGridEnv):
         max_objects=4,
         p_unsafe=0.0,
         fixed_state=None,
+        n_babies=1,
         ):
     self.layout = layout()
     self.textures = self.layout.textures
@@ -68,6 +69,7 @@ class HomeGridBase(MiniGridEnv):
     self.max_objects = max_objects
     self.p_unsafe = p_unsafe
     self.fixed_state = fixed_state
+    self.n_babies=n_babies
 
   @property
   def step_cnt(self):
@@ -122,6 +124,13 @@ class HomeGridBase(MiniGridEnv):
       can_objs.append(obj)
       self.objs.append(obj)
 
+  def _add_babies_to_house(self):
+    poss = random.sample(self.layout.valid_poss["agent_start"], self.num_trashobjs)
+    for i in range(self.n_babies):
+      obj = Baby()
+      pos = self.place_obj(obj, top=poss[i], size=(1,1), max_tries=5)
+      self.objs.append(obj)
+
   def _add_objs_to_house(self):
     trash_objs = random.sample(TRASH, self.num_trashobjs)
     poss = random.sample(self.layout.valid_poss["obj"], self.num_trashobjs)
@@ -147,6 +156,7 @@ class HomeGridBase(MiniGridEnv):
       # Place objects
       self._add_cans_to_house()
       self._add_objs_to_house()
+      self._add_babies_to_house()
 
     # Place agent
     agent_poss = random.choice(self.layout.valid_poss["agent_start"])
@@ -256,6 +266,8 @@ class HomeGridBase(MiniGridEnv):
 
       if (fwd_cell is None or fwd_cell.agent_can_overlap()) and \
           (fwd_floor is None or fwd_floor.agent_can_overlap()):
+        if isinstance(fwd_cell, Baby):
+          fwd_cell.squash()
         self.agent_pos = tuple(fwd_pos)
 
     # Pick up an object
@@ -408,4 +420,4 @@ class HomeGridBase(MiniGridEnv):
     draw.text((0, 0), text, (0, 0, 0))
     draw.text((0, 45), "Action: {}".format(self._env.prev_action), (0, 0, 0))
     img = np.asarray(img)
-    return im
+    return img
