@@ -32,12 +32,12 @@ SHOW_GRIDLINES = False
 USE_AGENT_TEXTURE = True
 if USE_AGENT_TEXTURE:
     AGENT_TEXTURE = np.asarray(Image.open(
-        f"{os.path.dirname(__file__)}/assets/robot.png"
+        f"{os.path.dirname(__file__)}/assets/robot_4.png"
     ))
 
 
 BABY_TEXTURE = np.asarray(Image.open(
-        f"{os.path.dirname(__file__)}/assets/baby.png"
+        f"{os.path.dirname(__file__)}/assets/cat_final.png"
     ))
 SQUASH_TEXTURE = np.asarray(Image.open(
         f"{os.path.dirname(__file__)}/assets/blood.png"

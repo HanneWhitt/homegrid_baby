@@ -374,7 +374,7 @@ class HomeGridBase(MiniGridEnv):
       "all_events": self.all_events,
     }
 
-    #self.save_environment_image(f'../../test_rgb_out/{self.step_count}.png')
+    self.save_environment_image(f'../../test_rgb_out/{self.step_count}.png')
 
     return obs, reward, terminated, truncated, info
 
