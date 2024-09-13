@@ -796,7 +796,7 @@ class MiniGridEnv(gym.Env):
             self.np_random.integers(yLow, yHigh),
         )
 
-    def place_obj(self, obj, top=None, size=None, reject_fn=None, max_tries=math.inf):
+    def place_obj(self, obj, top=None, size=None, reject_fn=None, max_tries=math.inf, not_allowed=[]):
         """
         Place an object at an empty position in the grid
 
@@ -832,6 +832,10 @@ class MiniGridEnv(gym.Env):
 
             pos = tuple(pos)
 
+            # SPECIFIC EDITS FOR LLM-ALIGNED-RL
+            if pos in not_allowed:
+                continue          
+
             # Don't place the object on top of another object
             if self.grid.get(*pos) is not None and not self.grid.get(*pos).can_overlap():
                 continue
@@ -863,13 +867,13 @@ class MiniGridEnv(gym.Env):
         obj.init_pos = (i, j)
         obj.cur_pos = (i, j)
 
-    def place_agent(self, top=None, size=None, rand_dir=True, max_tries=math.inf):
+    def place_agent(self, top=None, size=None, rand_dir=True, max_tries=math.inf, not_allowed=[]):
         """
         Set the agent's starting point at an empty position in the grid
         """
 
         self.agent_pos = (-1, -1)
-        pos = self.place_obj(None, top, size, max_tries=max_tries)
+        pos = self.place_obj(None, top, size, max_tries=max_tries, not_allowed=not_allowed)
         self.agent_pos = pos
 
         if rand_dir:
