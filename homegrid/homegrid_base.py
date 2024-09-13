@@ -73,7 +73,7 @@ class HomeGridBase(MiniGridEnv):
 
   @property
   def step_cnt(self):
-      return self._step_cnt
+      return self.step_count
 
   def init_from_state(self, state):
     """Initialize the env from a symbolic state."""
@@ -329,47 +329,47 @@ class HomeGridBase(MiniGridEnv):
       self.done_condition = "truncated"
 
     # Random events
-    if self.agent_pos in self.unsafe_poss:
-      terminated = True
-      reward = -1
+    # if self.agent_pos in self.unsafe_poss:
+    #   terminated = True
+    #   reward = -1
 
-    if len(self.unsafe_poss) > 0 and self.step_count == self.unsafe_end:
-      self.unsafe_poss = {}
-      self.unsafe_name = None
-      self.unsafe_end = -1
-      events.append({
-        "type": "termination",
-        "description": f"i cleaned the spill",
-        })
-    elif len(self.unsafe_poss) == 0:
-      obj = self._maybe_unsafe()
-      if obj:
-        events.append({
-          "type": "termination",
-          "description": f"spill near the {self.unsafe_name}",
-          })
-    else:
-        events.append({
-          "type": "termination",
-          "description": f"spill near the {self.unsafe_name}",
-          })
-    obj = self._maybe_teleport()
-    if obj:
-      room_code = self.cell_to_room[obj.cur_pos]
-      room_name = room2name[room_code]
-      events.append({
-        "type": "future", "obj": obj,
-        "room": room_code,
-        "description": f"i moved the {obj.name} to the {room_name}"
-        })
-    obj = self._maybe_spawn()
-    if obj:
-      room_code = self.cell_to_room[obj.cur_pos]
-      room_name = room2name[room_code]
-      events.append({
-        "type": "future", "obj": obj,
-        "description": f"there will be {obj.name} in the {room_name} later"
-        })
+    # if len(self.unsafe_poss) > 0 and self.step_count == self.unsafe_end:
+    #   self.unsafe_poss = {}
+    #   self.unsafe_name = None
+    #   self.unsafe_end = -1
+    #   events.append({
+    #     "type": "termination",
+    #     "description": f"i cleaned the spill",
+    #     })
+    # elif len(self.unsafe_poss) == 0:
+    #   obj = self._maybe_unsafe()
+    #   if obj:
+    #     events.append({
+    #       "type": "termination",
+    #       "description": f"spill near the {self.unsafe_name}",
+    #       })
+    # else:
+    #     events.append({
+    #       "type": "termination",
+    #       "description": f"spill near the {self.unsafe_name}",
+    #       })
+    # obj = self._maybe_teleport()
+    # if obj:
+    #   room_code = self.cell_to_room[obj.cur_pos]
+    #   room_name = room2name[room_code]
+    #   events.append({
+    #     "type": "future", "obj": obj,
+    #     "room": room_code,
+    #     "description": f"i moved the {obj.name} to the {room_name}"
+    #     })
+    # obj = self._maybe_spawn()
+    # if obj:
+    #   room_code = self.cell_to_room[obj.cur_pos]
+    #   room_name = room2name[room_code]
+    #   events.append({
+    #     "type": "future", "obj": obj,
+    #     "description": f"there will be {obj.name} in the {room_name} later"
+    #     })
 
 
     self.all_events.append(events)

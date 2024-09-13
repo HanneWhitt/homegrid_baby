@@ -28,7 +28,7 @@ def step(env, window, action, agent_view=False):
     print(f"step={env.step_cnt}, reward={reward:.2f}")
     print("Token: ", token)
     print("Language: ", obs["log_language_info"] if "log_language_info" in obs else "None")
-    print("Task: ", env.task)
+    # print("Task: ", env.task)
     print("-"*20)
     window.set_caption(
         f"r={reward:.2f} token_id={token_id} token={token}")

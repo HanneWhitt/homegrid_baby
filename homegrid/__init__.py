@@ -36,17 +36,13 @@ class HomeGrid:
 class HomeGridCat:
 
     def __init__(self, *args, **kwargs):
+        if "use_llm_reward" in kwargs:
+            use_llm_reward = kwargs.pop("use_llm_reward")
+        else:
+            use_llm_reward = False
         env = HomeGridBase(*args, **kwargs)
-        # env = RGBImgPartialObsWrapper(env)
-        # env = FilterObsWrapper(env, ["image"])
-        env = MultitaskWrapper(env)
-        # env = LanguageWrapper(
-        #     env,
-        #     preread_max=28,
-        #     repeat_task_every=20,
-        #     p_language=0.2,
-        #     lang_types=lang_types,
-        # )
+        if use_llm_reward:
+            raise NotImplementedError('Add a wrapper to add LLM rewards')
         self.env = env
 
     def __getattr__(self, name):
@@ -64,6 +60,16 @@ register(
     entry_point="homegrid:HomeGridCat",
     #kwargs={"lang_types": ["task"]},
 )
+
+register(
+    id="homegrid-cat-llm-reward",
+    entry_point="homegrid:HomeGridCat",
+    kwargs={"use_llm_reward": True},
+)
+
+
+
+
 
 
 
