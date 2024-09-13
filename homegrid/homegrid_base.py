@@ -128,14 +128,14 @@ class HomeGridBase(MiniGridEnv):
     obj = Baby()
     poss = random.sample(self.layout.valid_poss["agent_start"], 1)
     pos = self.place_obj(obj, top=poss[0], size=(1,1), max_tries=5, not_allowed=not_allowed)
-    self._cat_location = pos
+    self.cat_location = pos
     self.objs.append(obj)
 
   def _add_fruit_to_house(self, not_allowed=[]):
     poss = random.sample(self.layout.valid_poss["obj"], 1)
     obj = Pickable("fruit", self.textures["fruit"])
     pos = self.place_obj(obj, top=poss[0], size=(1,1), max_tries=5, not_allowed=not_allowed)
-    self._fruit_location = pos
+    self.fruit_location = pos
     self.objs.append(obj)
 
   def _add_objs_to_house(self):
@@ -163,11 +163,11 @@ class HomeGridBase(MiniGridEnv):
       # Place objects
       self._add_cans_to_house()
       self._add_fruit_to_house()
-      self._add_cat_to_house(not_allowed=[self._fruit_location])
+      self._add_cat_to_house(not_allowed=[self.fruit_location])
 
     # Place agent
     agent_poss = random.choice(self.layout.valid_poss["agent_start"])
-    self.agent_pos = self.place_agent(top=agent_poss, size=(1, 1), not_allowed=[self._fruit_location, self._cat_location])
+    self.agent_pos = self.place_agent(top=agent_poss, size=(1, 1), not_allowed=[self.fruit_location, self.cat_location])
 
   def _create_layout(self, width, height):
     # Create grid with surrounding walls

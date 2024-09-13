@@ -680,8 +680,8 @@ class MiniGridEnv(gym.Env):
         # Reinitialize episode-specific variables
         self.agent_pos = (-1, -1)
         self.agent_dir = -1
-        self._cat_location = (-1, -1)
-        self._fruit_location = (-1, -1)
+        self.cat_location = (-1, -1)
+        self.fruit_location = (-1, -1)
 
         # Generate a new random grid at the start of each episode
         self._gen_grid(self.width, self.height)
@@ -692,8 +692,8 @@ class MiniGridEnv(gym.Env):
             if isinstance(self.agent_pos, tuple)
             else all(self.agent_pos >= 0) and self.agent_dir >= 0
         )
-        assert self._cat_location >= (0, 0)
-        assert self._fruit_location >= (0, 0)
+        assert self.cat_location >= (0, 0)
+        assert self.fruit_location >= (0, 0)
 
 
         # Check that the agent doesn't overlap with an object
@@ -1126,6 +1126,71 @@ class MiniGridEnv(gym.Env):
         obs = {"image": image, "direction": self.agent_dir}
 
         return obs
+    
+
+
+    # def shaped_grid(self):
+    #     original_list = self.grid.grid
+    #     x = 0
+    #     shaped = []
+    #     for i in range(self.height):
+    #         shaped.append(original_list[x:x+self.width])
+    #         x += self.width
+    #     return shaped
+
+
+    #def shaped_grid(self, shaped_grid):
+    
+
+    def overlap_check(self, grid_element):
+        if grid_element is None:
+            return False
+        return not grid_element.agent_can_overlap()
+
+
+    def create_binary_grid(self, position_funcs):
+
+        """Each entry in positions CREATES one layer of binary grid
+
+        If None, leave layer as zeros
+        
+        If tup or list of tups, these positions set to 1
+
+        If func, func must return bool, applied to whole grid
+        """
+
+        self.binary_grid = np.zeros((self.height, self.width, len(position_funcs)))
+        self.binary_grid = self.update_binary_grid(position_funcs)
+        return self.binary_grid
+
+
+    def update_binary_grid(self, position_funcs):
+
+        """Each entry in positions UPDATES one layer of binary grid
+
+        If None, DO NOT UPDATE layer
+        
+        If tup or list of tups, layer wiped, these positions set to 1
+
+        If func, layer wiped, func must return bool, applied to whole grid
+        """
+
+        for layer_idx, layer in enumerate(position_funcs):
+            if layer is None:
+                continue
+            if isinstance(layer, tuple):
+                layer = [layer]
+            if isinstance(layer, list):
+                new_layer = np.zeros((self.height, self.width))
+                for x, y in layer:
+                    new_layer[y, x] = 1
+                self.binary_grid[:, :, layer_idx] = new_layer
+            else:
+                result = [int(layer(entry)) for entry in self.grid.grid]
+                self.binary_grid[:, :, layer_idx] = np.reshape(result, (self.height, self.width))
+        return self.binary_grid
+
+
 
     def get_pov_render(self, tile_size):
         """
