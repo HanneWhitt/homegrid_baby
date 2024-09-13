@@ -124,12 +124,17 @@ class HomeGridBase(MiniGridEnv):
       can_objs.append(obj)
       self.objs.append(obj)
 
-  def _add_babies_to_house(self):
-    poss = random.sample(self.layout.valid_poss["agent_start"], self.num_trashobjs)
-    for i in range(self.n_babies):
-      obj = Baby()
-      pos = self.place_obj(obj, top=poss[i], size=(1,1), max_tries=5)
-      self.objs.append(obj)
+  def _add_cat_to_house(self):
+    obj = Baby()
+    poss = random.sample(self.layout.valid_poss["agent_start"], 1)
+    self.place_obj(obj, top=poss[0], size=(1,1), max_tries=5)
+    self.objs.append(obj)
+
+  def _add_fruit_to_house(self):
+    poss = random.sample(self.layout.valid_poss["obj"], 1)
+    obj = Pickable("fruit", self.textures["fruit"])
+    pos = self.place_obj(obj, top=poss[0], size=(1,1), max_tries=5)
+    self.objs.append(obj)
 
   def _add_objs_to_house(self):
     trash_objs = random.sample(TRASH, self.num_trashobjs)
@@ -155,8 +160,8 @@ class HomeGridBase(MiniGridEnv):
       self.goal = {"obj": None, "can": None}
       # Place objects
       self._add_cans_to_house()
-      self._add_objs_to_house()
-      self._add_babies_to_house()
+      self._add_fruit_to_house()
+      self._add_cat_to_house()
 
     # Place agent
     agent_poss = random.choice(self.layout.valid_poss["agent_start"])
