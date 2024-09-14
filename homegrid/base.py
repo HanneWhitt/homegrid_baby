@@ -1129,23 +1129,24 @@ class MiniGridEnv(gym.Env):
     
 
 
-    # def shaped_grid(self):
-    #     original_list = self.grid.grid
-    #     x = 0
-    #     shaped = []
-    #     for i in range(self.height):
-    #         shaped.append(original_list[x:x+self.width])
-    #         x += self.width
-    #     return shaped
+    def shaped_grid(self):
+        original_list = self.grid.grid
+        x = 0
+        shaped = []
+        for i in range(self.height):
+            shaped.append(original_list[x:x+self.width])
+            x += self.width
+        return shaped
 
 
     #def shaped_grid(self, shaped_grid):
     
 
-    def overlap_check(self, grid_element):
-        if grid_element is None:
+    def overlap_check(self, grid_element, floor_grid_element):
+        if (grid_element is None or grid_element.agent_can_overlap()) and \
+            (floor_grid_element is None or floor_grid_element.agent_can_overlap()):
             return False
-        return not grid_element.agent_can_overlap()
+        return True
 
 
     def create_binary_grid(self, position_funcs):
@@ -1156,7 +1157,7 @@ class MiniGridEnv(gym.Env):
         
         If tup or list of tups, these positions set to 1
 
-        If func, func must return bool, applied to whole grid
+        If func, func must take grid elmt + floor grid elmt, return bool, applied to whole grid
         """
 
         self.binary_grid = np.zeros((self.height, self.width, len(position_funcs)))
@@ -1172,7 +1173,7 @@ class MiniGridEnv(gym.Env):
         
         If tup or list of tups, layer wiped, these positions set to 1
 
-        If func, layer wiped, func must return bool, applied to whole grid
+        If func, layer wiped, func must take grid elmt + floor grid elmt, return bool, applied to whole grid
         """
 
         for layer_idx, layer in enumerate(position_funcs):
@@ -1186,7 +1187,7 @@ class MiniGridEnv(gym.Env):
                     new_layer[y, x] = 1
                 self.binary_grid[:, :, layer_idx] = new_layer
             else:
-                result = [int(layer(entry)) for entry in self.grid.grid]
+                result = [int(layer(grd, floor_grd)) for grd, floor_grd in zip(self.grid.grid, self.grid.floor_grid)]
                 self.binary_grid[:, :, layer_idx] = np.reshape(result, (self.height, self.width))
         return self.binary_grid
 
