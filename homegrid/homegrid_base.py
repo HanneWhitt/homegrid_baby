@@ -286,37 +286,39 @@ class HomeGridBase(MiniGridEnv):
           fwd_cell.squash()
         self.agent_pos = tuple(fwd_pos)
 
-    # Pick up an object
-    elif action == self.actions.pickup:
-      if isinstance(fwd_cell, Pickable) and fwd_cell.can_pickup():
-        if self.carrying is None:
-          self.carrying = fwd_cell
-          self.carrying.cur_pos = (-1, -1)
-          self.grid.set(fwd_pos[0], fwd_pos[1], None)
+    # EDIT - OTHER ACTIONS DISABLED FOR FIRST DRAFT
 
-    # Drop an object
-    elif action == self.actions.drop:
-      if not fwd_cell and self.carrying:
-        self.grid.set(fwd_pos[0], fwd_pos[1], self.carrying)
-        self.carrying.cur_pos = tuple(fwd_pos)
-        self.carrying = None
-      elif isinstance(fwd_cell, Storage) and self.carrying:
-        succeeded = fwd_cell.interact(self.actions(action).name,
-                                      obj=self.carrying)
-        if succeeded:
-          self.carrying = None
+    # # Pick up an object
+    # if action == self.actions.pickup:
+    #   if isinstance(fwd_cell, Pickable) and fwd_cell.can_pickup():
+    #     if self.carrying is None:
+    #       self.carrying = fwd_cell
+    #       self.carrying.cur_pos = (-1, -1)
+    #       self.grid.set(fwd_pos[0], fwd_pos[1], None)
 
-    elif action == self.actions.get:
-      if not self.carrying and isinstance(fwd_cell, Storage):
-        obj = fwd_cell.interact(self.actions(action).name)
-        if obj:
-          self.carrying = obj
-          self.carrying.cur_pos = (-1, -1)
+    # # Drop an object
+    # elif action == self.actions.drop:
+    #   if not fwd_cell and self.carrying:
+    #     self.grid.set(fwd_pos[0], fwd_pos[1], self.carrying)
+    #     self.carrying.cur_pos = tuple(fwd_pos)
+    #     self.carrying = None
+    #   elif isinstance(fwd_cell, Storage) and self.carrying:
+    #     succeeded = fwd_cell.interact(self.actions(action).name,
+    #                                   obj=self.carrying)
+    #     if succeeded:
+    #       self.carrying = None
 
-    elif action == self.actions.pedal or action == self.actions.grasp or \
-        action == self.actions.lift:
-      if isinstance(fwd_cell, Storage):
-        succeeded = fwd_cell.interact(self.actions(action).name)
+    # elif action == self.actions.get:
+    #   if not self.carrying and isinstance(fwd_cell, Storage):
+    #     obj = fwd_cell.interact(self.actions(action).name)
+    #     if obj:
+    #       self.carrying = obj
+    #       self.carrying.cur_pos = (-1, -1)
+
+    # elif action == self.actions.pedal or action == self.actions.grasp or \
+    #     action == self.actions.lift:
+    #   if isinstance(fwd_cell, Storage):
+    #     succeeded = fwd_cell.interact(self.actions(action).name)
 
     else:
       raise ValueError(f"Unknown action: {action}")
