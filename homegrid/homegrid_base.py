@@ -62,7 +62,15 @@ class HomeGridBase(MiniGridEnv):
       max_steps=max_steps,
     )
     self.actions = HomeGridBase.Actions
-    self.action_space = spaces.Discrete(len(self.actions))
+
+    # ORIGINAL
+    # Full use of homegrid actions
+    #self.action_space = spaces.Discrete(len(self.actions))
+
+    # EDIT - Agent only moves up down left right
+    self.action_space = spaces.Discrete(4)
+
+
     self.num_trashcans = num_trashcans
     self.num_trashobjs = num_trashobjs
     self.p_teleport = p_teleport
@@ -389,7 +397,25 @@ class HomeGridBase(MiniGridEnv):
       None,
       None
     ])
+
+    terminated = self.agent_facing_fruit
+
+    reward = self.face_fruit_reward()
+
+
     return obs, reward, terminated, truncated, info
+
+
+  @property
+  def agent_facing_fruit(self):
+    return tuple(self.front_pos) == self.fruit_location
+
+  def face_fruit_reward(self):
+    if self.agent_facing_fruit:
+      return self._reward()
+    return 0
+  
+
 
 
   def save_environment_image(self, savefile):

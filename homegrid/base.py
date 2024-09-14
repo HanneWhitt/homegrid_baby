@@ -609,7 +609,7 @@ class MiniGridEnv(gym.Env):
         grid_size: int = None,
         width: int = None,
         height: int = None,
-        max_steps: int = 100,
+        max_steps: int = 50,
         see_through_walls: bool = True,
         agent_view_size: int = 7,
         render_mode: Optional[str] = None,
@@ -634,20 +634,30 @@ class MiniGridEnv(gym.Env):
         assert agent_view_size >= 3
         self.agent_view_size = agent_view_size
 
+        # OLD OBSERVATION SPACE
         # Observations are dictionaries containing an
         # encoding of the grid
-        image_observation_space = spaces.Box(
+        # image_observation_space = spaces.Box(
+        #     low=0,
+        #     high=255,
+        #     shape=(self.agent_view_size, self.agent_view_size, 3),
+        #     dtype="uint8",
+        # )
+        # self.observation_space = spaces.Dict(
+        #     {
+        #         "image": image_observation_space,
+        #         "direction": spaces.Discrete(4),
+        #     }
+        # )
+
+        # NEW OBSERVATION SPACE
+        self.observation_space = spaces.Box(
             low=0,
-            high=255,
-            shape=(self.agent_view_size, self.agent_view_size, 3),
+            high=1,
+            shape=(height, width, 4),
             dtype="uint8",
         )
-        self.observation_space = spaces.Dict(
-            {
-                "image": image_observation_space,
-                "direction": spaces.Discrete(4),
-            }
-        )
+
 
         # Range of possible rewards
         self.reward_range = (0, 1)
