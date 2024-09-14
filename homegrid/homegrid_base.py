@@ -1,6 +1,6 @@
 from typing import Dict, Optional, List, Tuple
-import gym
-from gym import spaces
+import gymnasium as gym
+from gymnasium import spaces
 from collections import defaultdict
 from enum import IntEnum
 import random

@@ -6,10 +6,10 @@ from typing import Any, Callable, Optional, Union
 import random
 import os
 
-import gym
+import gymnasium as gym
 import numpy as np
-from gym import spaces
-from gym.utils import seeding
+from gymnasium import spaces
+from gymnasium.utils import seeding
 from PIL import Image
 
 # Size in pixels of a tile in the full-scale human view
@@ -1189,7 +1189,7 @@ class MiniGridEnv(gym.Env):
         If func, func must take grid elmt + floor grid elmt, return bool, applied to whole grid
         """
 
-        self.binary_grid = np.zeros((self.height, self.width, len(position_funcs)))
+        self.binary_grid = np.zeros((self.height, self.width, len(position_funcs)), dtype=np.uint8)
         self.binary_grid = self.update_binary_grid(position_funcs)
         return self.binary_grid
 

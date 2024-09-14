@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import gym
+import gymnasium as gym
 
 from homegrid.window import Window
 import matplotlib.pyplot as plt

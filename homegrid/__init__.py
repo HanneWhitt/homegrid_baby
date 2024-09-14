@@ -1,4 +1,4 @@
-from gym.envs.registration import register
+from gymnasium.envs.registration import register
 from homegrid.homegrid_base import HomeGridBase
 from homegrid.language_wrappers import MultitaskWrapper, LanguageWrapper
 from homegrid.wrappers import RGBImgPartialObsWrapper, FilterObsWrapper
@@ -26,8 +26,8 @@ class HomeGrid:
     def __getattr__(self, name):
         return getattr(self.env, name)
 
-    def reset(self):
-        return self.env.reset()
+    def reset(self, seed=None):
+        return self.env.reset(seed=seed)
 
     def step(self, action):
         return self.env.step(action)
@@ -48,8 +48,8 @@ class HomeGridCat:
     def __getattr__(self, name):
         return getattr(self.env, name)
 
-    def reset(self):
-        return self.env.reset()
+    def reset(self, seed=None, options=None):
+        return self.env.reset(seed=seed, options=options)
 
     def step(self, action):
         return self.env.step(action)
