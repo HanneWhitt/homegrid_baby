@@ -237,6 +237,7 @@ class HomeGridBase(MiniGridEnv):
         "symbolic_state": self.get_full_symbolic_state(),
         "events": []
     }
+    
     return obs, info
 
   def step(self, action):
@@ -382,7 +383,12 @@ class HomeGridBase(MiniGridEnv):
     }
 
     #self.save_environment_image(f'../../test_rgb_out/{self.step_count}.png')
-
+    obs = self.update_binary_grid([
+      self.agent_pos,
+      None,
+      None,
+      None
+    ])
     return obs, reward, terminated, truncated, info
 
 

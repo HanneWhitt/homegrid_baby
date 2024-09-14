@@ -710,7 +710,17 @@ class MiniGridEnv(gym.Env):
             self.render()
 
         # Return first observation
-        obs = self.gen_obs()
+        
+        # ORIGINAL OBS FUNCTION
+        # obs = self.gen_obs()
+
+        # New obs function 
+        obs = self.create_binary_grid([
+            self.agent_pos,
+            self.cat_location,
+            self.fruit_location,
+            self.overlap_check
+        ])
 
         return obs, {}
 
@@ -1063,7 +1073,16 @@ class MiniGridEnv(gym.Env):
         if self.render_mode == "human":
             self.render()
 
-        obs = self.gen_obs()
+        # ORIGINAL OBS FUNCTION
+        # obs = self.gen_obs()
+
+        # NEW OBS FUNCTION
+        obs = self.update_binary_grid([
+            self.agent_pos,
+            None,
+            None,
+            None
+        ])
 
         return obs, reward, terminated, truncated, {}
 

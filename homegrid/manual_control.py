@@ -14,24 +14,25 @@ def redraw(window, img):
 def reset(env, window, seed=None, agent_view=False):
     obs, _ = env.reset()
     img = obs["image"] if agent_view else env.get_frame()
+    #img = env.get_frame()
     redraw(window, img)
 
 
 def step(env, window, action, agent_view=False):
     obs, reward, terminated, truncated, info = env.step(action)
     print(info["symbolic_state"])
-    token_id = obs.get("token", "No token id")
-    if token_id == "No token id":
-        token = "No token"
-    else:
-        token = tok.decode([token_id])
+    # token_id = obs.get("token", "No token id")
+    # if token_id == "No token id":
+    #     token = "No token"
+    # else:
+    #     token = tok.decode([token_id])
     print(f"step={env.step_cnt}, reward={reward:.2f}")
-    print("Token: ", token)
-    print("Language: ", obs["log_language_info"] if "log_language_info" in obs else "None")
+    # print("Token: ", token)
+    #print("Language: ", obs["log_language_info"] if "log_language_info" in obs else "None")
     # print("Task: ", env.task)
     print("-"*20)
-    window.set_caption(
-        f"r={reward:.2f} token_id={token_id} token={token}")
+    # window.set_caption(
+    #     f"r={reward:.2f} token_id={token_id} token={token}")
 
     if terminated:
         print(f"terminated! r={reward}")
