@@ -175,7 +175,10 @@ class HomeGridBase(MiniGridEnv):
 
     # Place agent
     agent_poss = random.choice(self.layout.valid_poss["agent_start"])
-    self.agent_pos = self.place_agent(top=agent_poss, size=(1, 1), not_allowed=[self.fruit_location, self.cat_location])
+    
+    # print(self.agen)
+    self.agent_pos = self.place_agent(top=agent_poss, size=None, max_tries = 5, not_allowed=[self.fruit_location, self.cat_location])
+
 
   def _create_layout(self, width, height):
     # Create grid with surrounding walls
@@ -399,6 +402,8 @@ class HomeGridBase(MiniGridEnv):
       None,
       None
     ])
+    obs = obs*255
+
 
     terminated = self.agent_facing_fruit
 

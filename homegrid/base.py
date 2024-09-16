@@ -650,13 +650,21 @@ class MiniGridEnv(gym.Env):
         #     }
         # )
 
-        # NEW OBSERVATION SPACE
+        # NEW OBSERVATION SPACE 1
         self.observation_space = spaces.Box(
             low=0,
-            high=1,
+            high=255,
             shape=(height, width, 4),
             dtype="uint8",
         )
+
+        # NEW OBSERVATION SPACE 2
+        # self.observation_space = spaces.Box(
+        #     low=0,
+        #     high=1,
+        #     shape=(height*width*4, ),
+        #     dtype="uint8",
+        # )
 
 
         # Range of possible rewards
@@ -731,6 +739,8 @@ class MiniGridEnv(gym.Env):
             self.fruit_location,
             self.overlap_check
         ])
+        obs = obs*255
+
 
         return obs, {}
 
@@ -848,6 +858,8 @@ class MiniGridEnv(gym.Env):
 
             num_tries += 1
 
+            
+
             pos = np.array(
                 (
                     self._rand_int(top[0], min(top[0] + size[0], self.grid.width)),
@@ -856,13 +868,18 @@ class MiniGridEnv(gym.Env):
             )
 
             pos = tuple(pos)
+            
 
             # SPECIFIC EDITS FOR LLM-ALIGNED-RL
             if pos in not_allowed:
-                continue          
+                continue   
 
             # Don't place the object on top of another object
             if self.grid.get(*pos) is not None and not self.grid.get(*pos).can_overlap():
+                print('pos:', pos)
+                print('OBJECT')
+                print(self.grid.get(*pos))
+                print(self.grid.get(*pos).can_overlap())
                 continue
 
             # Don't place the object where the agent is
@@ -1093,6 +1110,7 @@ class MiniGridEnv(gym.Env):
             None,
             None
         ])
+        obs = obs*255
 
         return obs, reward, terminated, truncated, {}
 
@@ -1212,13 +1230,48 @@ class MiniGridEnv(gym.Env):
                 layer = [layer]
             if isinstance(layer, list):
                 new_layer = np.zeros((self.height, self.width))
-                for x, y in layer:
-                    new_layer[y, x] = 1
+                for w, h in layer:
+                    new_layer[h, w] = 1
                 self.binary_grid[:, :, layer_idx] = new_layer
             else:
                 result = [int(layer(grd, floor_grd)) for grd, floor_grd in zip(self.grid.grid, self.grid.floor_grid)]
                 self.binary_grid[:, :, layer_idx] = np.reshape(result, (self.height, self.width))
         return self.binary_grid
+
+
+    def agent_view_binary_grid(self, size=7):
+        
+        depth = self.binary_grid.shape[-1]
+
+        av = np.zeros((size, size, depth))
+
+        half = int(size/2)
+        agent_w, agent_h = self.agent_pos
+
+        h_min = max(agent_h - half, 0)
+        h_max = min(agent_h + half + 1, self.height)
+        w_min = max(agent_w - half, 0)
+        w_max = min(agent_w + half + 1, self.width)
+
+        part = self.binary_grid[h_min:h_max, w_min:w_max, :]
+
+        # print('PART')
+        # print(part)
+
+        s_h_min = max(half - agent_h, 0)
+        s_h_max = min(self.height + half - agent_h, size)
+        s_w_min = max(half - agent_w, 0)
+        s_w_max = min(self.width + half - agent_w, size)
+
+        av[s_h_min:s_h_max, s_w_min:s_w_max, :] = part
+
+        # print('\n INTEGRATED')
+        # print(av)
+
+        return av
+
+        #for layer_idx in range(depth):
+
 
 
 
