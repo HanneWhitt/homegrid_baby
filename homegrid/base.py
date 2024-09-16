@@ -609,7 +609,7 @@ class MiniGridEnv(gym.Env):
         grid_size: int = None,
         width: int = None,
         height: int = None,
-        max_steps: int = 50,
+        max_steps: int = 100,
         see_through_walls: bool = True,
         agent_view_size: int = 7,
         render_mode: Optional[str] = None,
@@ -654,7 +654,7 @@ class MiniGridEnv(gym.Env):
         self.observation_space = spaces.Box(
             low=0,
             high=255,
-            shape=(height, width, 4),
+            shape=(7, 7, 3),
             dtype="uint8",
         )
 
@@ -734,14 +734,14 @@ class MiniGridEnv(gym.Env):
         # obs = self.gen_obs()
 
         # New obs function 
-        obs = self.create_binary_grid([
-            self.agent_pos,
+        self.binary_grid = self.create_binary_grid([
             self.cat_location,
             self.fruit_location,
             self.overlap_check
         ])
-        obs = obs*255
 
+        obs = self.agent_view_binary_grid()
+        obs = obs*255
 
         return obs, {}
 
@@ -1130,12 +1130,8 @@ class MiniGridEnv(gym.Env):
         # obs = self.gen_obs()
 
         # NEW OBS FUNCTION
-        obs = self.update_binary_grid([
-            self.agent_pos,
-            None,
-            None,
-            None
-        ])
+        
+        obs = self.agent_view_binary_grid()
         obs = obs*255
 
         return obs, reward, terminated, truncated, {}
@@ -1281,9 +1277,6 @@ class MiniGridEnv(gym.Env):
 
         part = self.binary_grid[h_min:h_max, w_min:w_max, :]
 
-        # print('PART')
-        # print(part)
-
         s_h_min = max(half - agent_h, 0)
         s_h_max = min(self.height + half - agent_h, size)
         s_w_min = max(half - agent_w, 0)
@@ -1291,12 +1284,8 @@ class MiniGridEnv(gym.Env):
 
         av[s_h_min:s_h_max, s_w_min:s_w_max, :] = part
 
-        # print('\n INTEGRATED')
-        # print(av)
-
         return av
 
-        #for layer_idx in range(depth):
 
 
 

@@ -397,12 +397,8 @@ class HomeGridBase(MiniGridEnv):
     }
 
     #self.save_environment_image(f'../../test_rgb_out/{self.step_count}.png')
-    obs = self.update_binary_grid([
-      self.agent_pos,
-      None,
-      None,
-      None
-    ])
+
+    obs = self.agent_view_binary_grid()
     obs = obs*255
 
 
