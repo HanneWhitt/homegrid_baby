@@ -654,7 +654,7 @@ class MiniGridEnv(gym.Env):
         self.observation_space = spaces.Box(
             low=0,
             high=255,
-            shape=(7, 7, 3),
+            shape=(height, width, 4),
             dtype="uint8",
         )
 
@@ -734,13 +734,14 @@ class MiniGridEnv(gym.Env):
         # obs = self.gen_obs()
 
         # New obs function 
-        self.binary_grid = self.create_binary_grid([
+        obs = self.create_binary_grid([
+            self.agent_pos,
             self.cat_location,
             self.fruit_location,
             self.overlap_check
         ])
 
-        obs = self.agent_view_binary_grid()
+        #obs = self.agent_view_binary_grid()
         obs = obs*255
 
         return obs, {}
@@ -1265,7 +1266,7 @@ class MiniGridEnv(gym.Env):
         
         depth = self.binary_grid.shape[-1]
 
-        av = np.zeros((size, size, depth))
+        av = np.zeros((size, size, depth), dtype='uint8')
 
         half = int(size/2)
         agent_w, agent_h = self.agent_pos

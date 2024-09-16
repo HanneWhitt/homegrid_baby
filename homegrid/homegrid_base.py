@@ -398,14 +398,20 @@ class HomeGridBase(MiniGridEnv):
 
     #self.save_environment_image(f'../../test_rgb_out/{self.step_count}.png')
 
-    obs = self.agent_view_binary_grid()
+    #obs = self.agent_view_binary_grid()
+    
+    obs = self.update_binary_grid([
+        self.agent_pos,
+        None,
+        None,
+        None
+    ])
     obs = obs*255
 
 
     terminated = self.agent_facing_fruit
 
     reward = self.face_fruit_reward()
-
 
     return obs, reward, terminated, truncated, info
 
