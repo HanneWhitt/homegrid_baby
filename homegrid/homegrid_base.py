@@ -5,6 +5,7 @@ from collections import defaultdict
 from enum import IntEnum
 import random
 import numpy as np
+import math
 
 from PIL import Image
 from PIL import ImageFont
@@ -134,12 +135,66 @@ class HomeGridBase(MiniGridEnv):
       #pos = self.place_obj(obj, top=poss[i], size=(1,1), max_tries=5)
     pos = self.place_obj(can_objs, self.layout.valid_poss["can"], max_tries=20)
     self.objs = self.objs + can_objs
+  
+
+  def place_at_mid_location(self, obj, A, B, valid_positions, max_tries=math.inf, not_allowed=[]):
+
+    A, B = np.array(A), np.array(B)
+    val = np.array(valid_positions)
+
+    assert A.shape == B.shape == (2,)
+
+    # Pick a ramdom point along A to B vector
+    random_value = np.random.uniform()
+    random_point = A + random_value*(B - A)
+
+    # Sort valid locations by distance from point
+    sq_dist = np.sum((val - random_point)**2, axis=1)
+    sort_idxs = sq_dist.argsort()
+
+    # Try the positions in order of proximity to chosen point
+    for num_tries, pos_idx in enumerate(sort_idxs):
+      
+      if num_tries > max_tries:
+        raise RecursionError("rejection sampling failed in place_obj")
+      
+      pos = tuple(valid_positions[pos_idx])
+                
+      # SPECIFIC EDITS FOR LLM-ALIGNED-RL
+      if pos in not_allowed:
+        continue
+
+      # Don't place the object on top of another object
+      if self.grid.get(*pos) is not None and not self.grid.get(*pos).can_overlap():
+        continue
+
+      # Don't place the object where the agent is
+      if np.array_equal(pos, self.agent_pos):
+        continue
+      
+      break
+
+    self.grid.set(pos[0], pos[1], obj)
+
+    if obj is not None:
+        obj.init_pos = pos
+        obj.cur_pos = pos
+
+    return pos
+
 
   def _add_cat_to_house(self, not_allowed=[]):
     obj = Baby()
     #poss = random.sample(self.layout.valid_poss["agent_start"], 1)
-    pos = self.place_obj(obj, self.layout.valid_poss["agent_start"], max_tries=20, not_allowed=not_allowed)
-    self.cat_location = tuple(pos[0])
+    # pos = self.place_obj(obj, self.layout.valid_poss["agent_start"], max_tries=20, not_allowed=not_allowed)
+    pos = self.place_at_mid_location(
+      obj,
+      self.agent_pos,
+      self.fruit_location,
+      self.layout.valid_poss["agent_start"],
+      not_allowed=not_allowed
+    )
+    self.cat_location = pos
     self.objs.append(obj)
 
   def _add_fruit_to_house(self, not_allowed=[]):
@@ -174,11 +229,10 @@ class HomeGridBase(MiniGridEnv):
       # Place objects
       self._add_cans_to_house()
       self._add_fruit_to_house()
-      self._add_cat_to_house(not_allowed=[self.fruit_location])
-
+      
     # Place agent
-
-    self.agent_pos = self.place_agent(self.layout.valid_poss["agent_start"], max_tries = 20, not_allowed=[self.fruit_location, self.cat_location])
+    self.agent_pos = self.place_agent(self.layout.valid_poss["agent_start"], max_tries = 20, not_allowed=[self.fruit_location])
+    self._add_cat_to_house(not_allowed=[self.agent_pos, self.fruit_location])
 
 
   def _create_layout(self, width, height):
