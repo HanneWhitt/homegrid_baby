@@ -705,6 +705,7 @@ class MiniGridEnv(gym.Env):
         self._gen_grid(self.width, self.height)
 
         # These fields should be defined by _gen_grid
+
         assert (
             self.agent_pos >= (0, 0)
             if isinstance(self.agent_pos, tuple)
@@ -831,7 +832,7 @@ class MiniGridEnv(gym.Env):
             self.np_random.integers(yLow, yHigh),
         )
 
-    def place_obj(self, obj, top=None, size=None, reject_fn=None, max_tries=math.inf, not_allowed=[]):
+    def place_obj(self, objs, valid_positions, reject_fn=None, max_tries=math.inf, not_allowed=[]):
         """
         Place an object at an empty position in the grid
 
@@ -840,17 +841,21 @@ class MiniGridEnv(gym.Env):
         :param reject_fn: function to filter out potential positions
         """
 
-        if top is None:
-            top = (0, 0)
-        else:
-            top = (max(top[0], 0), max(top[1], 0))
+        # if top is None:
+        #     top = (0, 0)
+        # else:
+        #     top = (max(top[0], 0), max(top[1], 0))
 
-        if size is None:
-            size = (self.grid.width, self.grid.height)
+        # if size is None:
+        #     size = (self.grid.width, self.grid.height)
+
+        if not isinstance(objs, list):
+            objs = [objs]
 
         num_tries = 0
+        settled = False
 
-        while True:
+        while not settled:
             # This is to handle with rare cases where rejection sampling
             # gets stuck in an infinite loop
             if num_tries > max_tries:
@@ -860,45 +865,61 @@ class MiniGridEnv(gym.Env):
 
             
 
-            pos = np.array(
-                (
-                    self._rand_int(top[0], min(top[0] + size[0], self.grid.width)),
-                    self._rand_int(top[1], min(top[1] + size[1], self.grid.height)),
-                )
-            )
+            # pos = np.array(
+            #     (
+            #         self._rand_int(top[0], min(top[0] + size[0], self.grid.width)),
+            #         self._rand_int(top[1], min(top[1] + size[1], self.grid.height)),
+            #     )
+            # )
+
+            sample = random.sample(valid_positions, len(objs))
+
+            failure = False
+
+            for obj, pos in zip(objs, sample):
+
+                pos = tuple(pos)
+                
+                # SPECIFIC EDITS FOR LLM-ALIGNED-RL
+                if pos in not_allowed:
+                    failure = True
+                    break
+
+                # Don't place the object on top of another object
+                if self.grid.get(*pos) is not None and not self.grid.get(*pos).can_overlap():
+                    # print('pos:', pos)
+                    # print('OBJECT')
+                    # print(self.grid.get(*pos))
+                    # print(self.grid.get(*pos).can_overlap())
+                    failure = True
+                    break
+
+                # Don't place the object where the agent is
+                if np.array_equal(pos, self.agent_pos):
+                    failure = True
+                    break
+
+                # Check if there is a filtering criterion
+                if reject_fn and reject_fn(self, pos):
+                    failure = True
+                    break
+
+            if failure:
+                continue
+            else:
+                settled = True
+        
+        for obj, pos in zip(objs, sample):
 
             pos = tuple(pos)
-            
 
-            # SPECIFIC EDITS FOR LLM-ALIGNED-RL
-            if pos in not_allowed:
-                continue   
+            self.grid.set(pos[0], pos[1], obj)
 
-            # Don't place the object on top of another object
-            if self.grid.get(*pos) is not None and not self.grid.get(*pos).can_overlap():
-                print('pos:', pos)
-                print('OBJECT')
-                print(self.grid.get(*pos))
-                print(self.grid.get(*pos).can_overlap())
-                continue
+            if obj is not None:
+                obj.init_pos = pos
+                obj.cur_pos = pos
 
-            # Don't place the object where the agent is
-            if np.array_equal(pos, self.agent_pos):
-                continue
-
-            # Check if there is a filtering criterion
-            if reject_fn and reject_fn(self, pos):
-                continue
-
-            break
-
-        self.grid.set(pos[0], pos[1], obj)
-
-        if obj is not None:
-            obj.init_pos = pos
-            obj.cur_pos = pos
-
-        return pos
+        return sample
 
     def put_obj(self, obj, i, j):
         """
@@ -909,19 +930,24 @@ class MiniGridEnv(gym.Env):
         obj.init_pos = (i, j)
         obj.cur_pos = (i, j)
 
-    def place_agent(self, top=None, size=None, rand_dir=True, max_tries=math.inf, not_allowed=[]):
+    def place_agent(self, valid_positions, rand_dir=True, max_tries=math.inf, not_allowed=[]):
         """
         Set the agent's starting point at an empty position in the grid
         """
 
         self.agent_pos = (-1, -1)
-        pos = self.place_obj(None, top, size, max_tries=max_tries, not_allowed=not_allowed)
-        self.agent_pos = pos
+        pos = self.place_obj(None, valid_positions, max_tries=max_tries, not_allowed=not_allowed)
+        self.agent_pos = pos[0]
+        #print(self.agent_pos)
+        #input('HELLO!!')
 
         if rand_dir:
             self.agent_dir = self._rand_int(0, 4)
 
-        return pos
+        #print(self.agent_pos)
+        #nput('WEQAOGUN')
+
+        return self.agent_pos
 
     @property
     def dir_vec(self):

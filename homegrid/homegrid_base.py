@@ -83,78 +83,81 @@ class HomeGridBase(MiniGridEnv):
   def step_cnt(self):
       return self.step_count
 
-  def init_from_state(self, state):
-    """Initialize the env from a symbolic state."""
-    self._create_layout(self.width, self.height)
-    # place agent
-    self.agent_pos = state["agent"]["pos"]
-    self.agent_dir = state["agent"]["dir"]
-    self.objs = []
-    # place objects with appropriate state
-    for ob in state["objects"]:
-      if ob["pos"] == (-1, -1):
-        print(f"Skipping carried object {ob['name']}")
-        continue
-      if ob["type"] == "Storage":
-        pfx = ob["name"].replace(" ", "_")
-        obj = Storage(
-          name=ob["name"],
-          textures={
-            "open": self.textures[f"{pfx}_open"],
-            "closed": self.textures[f"{pfx}_closed"]},
-          state=ob["state"],
-          action=ob["action"],
-          contains=ob["contains"],
-        )
-      elif ob["type"] == "Pickable":
-        obj = Pickable(
-          name=ob["name"],
-          texture=self.textures[ob["name"]],
-          invisible=ob["invisible"],
-        )
-      else:
-        raise NotImplementedError("Obj type {ob['type']}")
-      self.objs.append(obj)
-      self.place_obj(obj, top=ob["pos"],
-                     size=(1,1), max_tries=1)
+  # def init_from_state(self, state):
+  #   """Initialize the env from a symbolic state."""
+  #   self._create_layout(self.width, self.height)
+  #   # place agent
+  #   self.agent_pos = state["agent"]["pos"]
+  #   self.agent_dir = state["agent"]["dir"]
+  #   self.objs = []
+  #   # place objects with appropriate state
+  #   for ob in state["objects"]:
+  #     if ob["pos"] == (-1, -1):
+  #       print(f"Skipping carried object {ob['name']}")
+  #       continue
+  #     if ob["type"] == "Storage":
+  #       pfx = ob["name"].replace(" ", "_")
+  #       obj = Storage(
+  #         name=ob["name"],
+  #         textures={
+  #           "open": self.textures[f"{pfx}_open"],
+  #           "closed": self.textures[f"{pfx}_closed"]},
+  #         state=ob["state"],
+  #         action=ob["action"],
+  #         contains=ob["contains"],
+  #       )
+  #     elif ob["type"] == "Pickable":
+  #       obj = Pickable(
+  #         name=ob["name"],
+  #         texture=self.textures[ob["name"]],
+  #         invisible=ob["invisible"],
+  #       )
+  #     else:
+  #       raise NotImplementedError("Obj type {ob['type']}")
+  #     self.objs.append(obj)
+  #     self.place_obj(obj, top=ob["pos"],
+  #                    size=(1,1), max_tries=1)
 
   def _add_cans_to_house(self):
     cans = random.sample(CANS, self.num_trashcans)
-    poss = random.sample(self.layout.valid_poss["can"], self.num_trashcans)
+    #poss = random.sample(self.layout.valid_poss["can"], self.num_trashcans)
     can_objs = []
     for i, can in enumerate(cans):
       obj = Storage(can, {
         "open": self.textures[f"{can}_open"],
         "closed": self.textures[f"{can}_closed"]},
         # Make one of the cans irreversibly broken
-        reset_broken_after=200 if i == 0 else 5)
-      pos = self.place_obj(obj, top=poss[i], size=(1,1), max_tries=5)
+        reset_broken_after=200 if i == 0 else 5
+      )
       can_objs.append(obj)
-      self.objs.append(obj)
+      
+      #pos = self.place_obj(obj, top=poss[i], size=(1,1), max_tries=5)
+    pos = self.place_obj(can_objs, self.layout.valid_poss["can"], max_tries=20)
+    self.objs = self.objs + can_objs
 
   def _add_cat_to_house(self, not_allowed=[]):
     obj = Baby()
-    poss = random.sample(self.layout.valid_poss["agent_start"], 1)
-    pos = self.place_obj(obj, top=poss[0], size=(1,1), max_tries=5, not_allowed=not_allowed)
-    self.cat_location = pos
+    #poss = random.sample(self.layout.valid_poss["agent_start"], 1)
+    pos = self.place_obj(obj, self.layout.valid_poss["agent_start"], max_tries=20, not_allowed=not_allowed)
+    self.cat_location = tuple(pos[0])
     self.objs.append(obj)
 
   def _add_fruit_to_house(self, not_allowed=[]):
-    poss = random.sample(self.layout.valid_poss["obj"], 1)
+    #poss = random.sample(self.layout.valid_poss["obj"], 1)
     obj = Pickable("fruit", self.textures["fruit"])
-    pos = self.place_obj(obj, top=poss[0], size=(1,1), max_tries=5, not_allowed=not_allowed)
-    self.fruit_location = pos
+    pos = self.place_obj(obj, self.layout.valid_poss["obj"], max_tries=20, not_allowed=not_allowed)
+    self.fruit_location = tuple(pos[0])
     self.objs.append(obj)
 
-  def _add_objs_to_house(self):
-    trash_objs = random.sample(TRASH, self.num_trashobjs)
-    poss = random.sample(self.layout.valid_poss["obj"], self.num_trashobjs)
-    trashobj_objs = []
-    for i, trash in enumerate(trash_objs):
-      obj = Pickable(trash, self.textures[trash])
-      pos = self.place_obj(obj, top=poss[i], size=(1,1), max_tries=5)
-      trashobj_objs.append(obj)
-      self.objs.append(obj)
+  # def _add_objs_to_house(self):
+  #   trash_objs = random.sample(TRASH, self.num_trashobjs)
+  #   poss = random.sample(self.layout.valid_poss["obj"], self.num_trashobjs)
+  #   trashobj_objs = []
+  #   for i, trash in enumerate(trash_objs):
+  #     obj = Pickable(trash, self.textures[trash])
+  #     pos = self.place_obj(obj, top=poss[i], size=(1,1), max_tries=5)
+  #     trashobj_objs.append(obj)
+  #     self.objs.append(obj)
 
   def _gen_grid(self, width, height):
     if self.fixed_state:
@@ -174,10 +177,8 @@ class HomeGridBase(MiniGridEnv):
       self._add_cat_to_house(not_allowed=[self.fruit_location])
 
     # Place agent
-    agent_poss = random.choice(self.layout.valid_poss["agent_start"])
-    
-    # print(self.agen)
-    self.agent_pos = self.place_agent(top=agent_poss, size=None, max_tries = 5, not_allowed=[self.fruit_location, self.cat_location])
+
+    self.agent_pos = self.place_agent(self.layout.valid_poss["agent_start"], max_tries = 20, not_allowed=[self.fruit_location, self.cat_location])
 
 
   def _create_layout(self, width, height):
