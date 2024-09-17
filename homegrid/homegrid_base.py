@@ -227,7 +227,7 @@ class HomeGridBase(MiniGridEnv):
       self.objs = []
       self.goal = {"obj": None, "can": None}
       # Place objects
-      self._add_cans_to_house()
+      #self._add_cans_to_house()
       self._add_fruit_to_house()
       
     # Place agent
