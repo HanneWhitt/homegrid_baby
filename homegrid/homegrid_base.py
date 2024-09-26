@@ -183,10 +183,18 @@ class HomeGridBase(MiniGridEnv):
     return pos
 
 
-  def _add_cat_to_house(self, not_allowed=[]):
+  def _add_cat_to_house(self, not_allowed=[], one_square_buffer=True):
     obj = Baby()
     #poss = random.sample(self.layout.valid_poss["agent_start"], 1)
     # pos = self.place_obj(obj, self.layout.valid_poss["agent_start"], max_tries=20, not_allowed=not_allowed)
+    
+    if one_square_buffer:
+      # Expand around 'not allowed' entries so cat cannot start within 1 square of it's entries. 
+      full_list = []
+      for i, j in not_allowed:
+        full_list += [(i + del_i, j + del_j) for del_i in [-1, 0, 1] for del_j in [-1, 0, 1]]
+      not_allowed = full_list
+    
     pos = self.place_at_mid_location(
       obj,
       self.agent_pos,
@@ -303,7 +311,7 @@ class HomeGridBase(MiniGridEnv):
         "symbolic_state": self.get_full_symbolic_state(),
         "events": []
     }
-    
+    self.cat_squashed = False
     return obs, info
 
   def step(self, action):
@@ -342,6 +350,7 @@ class HomeGridBase(MiniGridEnv):
           (fwd_floor is None or fwd_floor.agent_can_overlap()):
         if isinstance(fwd_cell, Baby):
           fwd_cell.squash()
+          self.cat_squashed = True
         self.agent_pos = tuple(fwd_pos)
 
     # EDIT - OTHER ACTIONS DISABLED FOR FIRST DRAFT
