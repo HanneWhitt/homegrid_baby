@@ -2,6 +2,8 @@ from gymnasium.envs.registration import register
 from homegrid.homegrid_base import HomeGridBase
 from homegrid.language_wrappers import MultitaskWrapper, LanguageWrapper
 from homegrid.wrappers import RGBImgPartialObsWrapper, FilterObsWrapper
+from homegrid.reward_model_wrapper import RewardModelWrapper
+
 
 import warnings
 warnings.filterwarnings("ignore", module="gym.utils.passive_env_checker")
@@ -42,7 +44,7 @@ class HomeGridCat:
             use_llm_reward = False
         env = HomeGridBase(*args, **kwargs)
         if use_llm_reward:
-            raise NotImplementedError('Add a wrapper to add LLM rewards')
+            env = RewardModelWrapper(env)
         self.env = env
 
     def __getattr__(self, name):

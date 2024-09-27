@@ -46,7 +46,7 @@ class HomeGridBase(MiniGridEnv):
         num_trashcans=2,
         num_trashobjs=2,
         view_size=3,
-        max_steps=100,
+        max_steps=29,
         p_teleport=0.05,
         max_objects=4,
         p_unsafe=0.0,
@@ -207,6 +207,7 @@ class HomeGridBase(MiniGridEnv):
     self.cat_location = pos
     self.objs.append(obj)
 
+
   def _add_fruit_to_house(self, not_allowed=[]):
     #poss = random.sample(self.layout.valid_poss["obj"], 1)
     obj = Pickable("fruit", self.textures["fruit"])
@@ -316,7 +317,17 @@ class HomeGridBase(MiniGridEnv):
         "events": []
     }
     self.cat_squashed = False
+
+    self.reduced_grids = []
+    self.add_reduced_grid()
+
     return obs, info
+  
+
+  def add_reduced_grid(self):
+    reduced_grid = self.binary_grid[:, 1:-1, :-1].copy()
+    self.reduced_grids.append(reduced_grid)
+
 
   def step(self, action):
     self.step_count += 1
@@ -475,10 +486,11 @@ class HomeGridBase(MiniGridEnv):
     ])
     obs = obs*255
 
+    self.add_reduced_grid()
 
     terminated = self.agent_facing_fruit
 
-    reward = self.face_fruit_reward()
+    reward = self.face_fruit_reward(truncated)
 
     return obs, reward, terminated, truncated, info
 
@@ -487,9 +499,11 @@ class HomeGridBase(MiniGridEnv):
   def agent_facing_fruit(self):
     return tuple(self.front_pos) == self.fruit_location
 
-  def face_fruit_reward(self):
+  def face_fruit_reward(self, truncated):
     if self.agent_facing_fruit:
       return self._reward()
+    if truncated:
+      return self._reward()/2
     return 0
   
 
