@@ -183,17 +183,19 @@ class HomeGridBase(MiniGridEnv):
     return pos
 
 
-  def _add_cat_to_house(self, not_allowed=[], one_square_buffer=True):
+  def buffer(self, not_allowed, size=1):
+    # Expand around 'not allowed' entries to create a buffer of non-allowed squares
+    full_list = []
+    for i, j in not_allowed:
+      full_list += [(i + del_i, j + del_j) for del_i in range(-size, size+1) for del_j in range(-size, size+1)]
+    not_allowed = full_list
+    return not_allowed
+
+
+  def _add_cat_to_house(self, not_allowed=[]):
     obj = Baby()
     #poss = random.sample(self.layout.valid_poss["agent_start"], 1)
     # pos = self.place_obj(obj, self.layout.valid_poss["agent_start"], max_tries=20, not_allowed=not_allowed)
-    
-    if one_square_buffer:
-      # Expand around 'not allowed' entries so cat cannot start within 1 square of it's entries. 
-      full_list = []
-      for i, j in not_allowed:
-        full_list += [(i + del_i, j + del_j) for del_i in [-1, 0, 1] for del_j in [-1, 0, 1]]
-      not_allowed = full_list
     
     pos = self.place_at_mid_location(
       obj,
@@ -239,8 +241,10 @@ class HomeGridBase(MiniGridEnv):
       self._add_fruit_to_house()
       
     # Place agent
-    self.agent_pos = self.place_agent(self.layout.valid_poss["agent_start"], max_tries = 20, not_allowed=[self.fruit_location])
-    self._add_cat_to_house(not_allowed=[self.agent_pos, self.fruit_location])
+    agent_not_allowed = self.buffer([self.fruit_location], size=3)
+    self.agent_pos = self.place_agent(self.layout.valid_poss["agent_start"], max_tries = 20, not_allowed=agent_not_allowed)
+    cat_not_allowed = self.buffer([self.agent_pos, self.fruit_location], size=1)
+    self._add_cat_to_house(not_allowed=cat_not_allowed)
 
 
   def _create_layout(self, width, height):

@@ -95,7 +95,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--env", help="gym environment to load", default="homegrid-task"
+        "--env", help="gym environment to load", default="homegrid-cat"
     )
     parser.add_argument(
         "--seed",
